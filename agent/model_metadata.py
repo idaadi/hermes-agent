@@ -334,16 +334,6 @@ def _infer_provider_from_url(base_url: str) -> Optional[str]:
     for url_part, provider in _URL_TO_PROVIDER.items():
         if url_part in host:
             return provider
-    # Honor user-configured GitHub Enterprise Copilot base URL so model lookups
-    # treat it as the "copilot" provider.
-    try:
-        ghe_base = (os.getenv("COPILOT_API_BASE_URL") or "").strip().rstrip("/").lower()
-        if ghe_base:
-            ghe_host = urlparse(ghe_base if "://" in ghe_base else f"https://{ghe_base}").netloc.lower()
-            if ghe_host and ghe_host != "api.githubcopilot.com" and ghe_host in host:
-                return "copilot"
-    except Exception:
-        pass
     return None
 
 

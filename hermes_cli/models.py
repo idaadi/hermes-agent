@@ -2199,14 +2199,6 @@ def get_copilot_model_context(model_id: str, api_key: Optional[str] = None) -> O
 
 def _is_github_models_base_url(base_url: Optional[str]) -> bool:
     normalized = (base_url or "").strip().rstrip("/").lower()
-    if not normalized:
-        return False
-    try:
-        from hermes_cli.copilot_auth import is_copilot_url
-        if is_copilot_url(normalized):
-            return True
-    except Exception:
-        pass
     return (
         normalized.startswith(COPILOT_BASE_URL)
         or normalized.startswith("https://models.github.ai/inference")
@@ -2569,7 +2561,7 @@ def probe_api_models(
         headers["anthropic-version"] = "2023-06-01"
     elif api_key:
         headers["Authorization"] = f"Bearer {api_key}"
-    if normalized.startswith(COPILOT_BASE_URL) or "api.githubcopilot.com" in normalized:
+    if normalized.startswith(COPILOT_BASE_URL):
         headers.update(copilot_default_headers())
 
     for candidate_base, is_fallback in candidates:
