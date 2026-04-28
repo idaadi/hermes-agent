@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 # OAuth device code flow constants (same client ID as opencode/Copilot CLI).
 # All endpoints are env-overridable so GitHub Enterprise (GHE) deployments
 # can point Hermes at their own OAuth + Copilot URLs.
-COPILOT_OAUTH_CLIENT_ID = os.getenv("COPILOT_OAUTH_CLIENT_ID", "Ov23li8tweQw6odWQebz")
+COPILOT_OAUTH_CLIENT_ID = os.getenv("COPILOT_OAUTH_CLIENT_ID", "Iv1.b507a08c87ecfe98")
 COPILOT_DEVICE_CODE_URL = os.getenv("COPILOT_DEVICE_CODE_URL", "https://github.com/login/device/code")
 COPILOT_ACCESS_TOKEN_URL = os.getenv("COPILOT_ACCESS_TOKEN_URL", "https://github.com/login/oauth/access_token")
 
