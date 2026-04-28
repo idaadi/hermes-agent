@@ -875,6 +875,16 @@ def _resolve_api_key_provider() -> Tuple[Optional[OpenAI], Optional[str]]:
             if model is None:
                 continue  # skip provider if we don't know a valid aux model
             logger.debug("Auxiliary text client: %s (%s) via pool", pconfig.name, model)
+            if provider_id == "copilot":
+                logger.info(
+                    "_resolve_api_key_provider[copilot via pool]: base_url=%s "
+                    "(pool_entry_base_url=%r, pconfig.inference_base_url=%r, "
+                    "env COPILOT_API_BASE_URL=%r)",
+                    base_url,
+                    _pool_runtime_base_url(entry, pconfig.inference_base_url),
+                    pconfig.inference_base_url,
+                    os.getenv("COPILOT_API_BASE_URL"),
+                )
             if provider_id == "gemini":
                 from agent.gemini_native_adapter import GeminiNativeClient, is_native_gemini_base_url
 
@@ -901,6 +911,16 @@ def _resolve_api_key_provider() -> Tuple[Optional[OpenAI], Optional[str]]:
         if model is None:
             continue  # skip provider if we don't know a valid aux model
         logger.debug("Auxiliary text client: %s (%s)", pconfig.name, model)
+        if provider_id == "copilot":
+            logger.info(
+                "_resolve_api_key_provider[copilot via creds]: base_url=%s "
+                "(creds_base_url=%r, pconfig.inference_base_url=%r, "
+                "env COPILOT_API_BASE_URL=%r)",
+                base_url,
+                creds.get("base_url"),
+                pconfig.inference_base_url,
+                os.getenv("COPILOT_API_BASE_URL"),
+            )
         if provider_id == "gemini":
             from agent.gemini_native_adapter import GeminiNativeClient, is_native_gemini_base_url
 
@@ -2030,6 +2050,16 @@ def resolve_provider_client(
             ))
         client = OpenAI(api_key=api_key, base_url=base_url,
                         **({"default_headers": headers} if headers else {}))
+
+        if provider == "copilot":
+            logger.info(
+                "resolve_provider_client[copilot]: base_url=%s (creds_base_url=%r, "
+                "pconfig.inference_base_url=%r, env COPILOT_API_BASE_URL=%r)",
+                base_url,
+                creds.get("base_url"),
+                pconfig.inference_base_url,
+                os.getenv("COPILOT_API_BASE_URL"),
+            )
 
         # Copilot GPT-5+ models (except gpt-5-mini) require the Responses
         # API — they are not accessible via /chat/completions.  Wrap the
