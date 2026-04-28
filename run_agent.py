@@ -85,6 +85,19 @@ from tools.interrupt import set_interrupt as _set_interrupt
 from tools.browser_tool import cleanup_browser
 
 
+def _is_copilot_base(url: str) -> bool:
+    """Return True if *url* targets the Copilot / GitHub Models API.
+
+    Matches both the public ``api.githubcopilot.com`` endpoint and any custom
+    ``COPILOT_API_BASE_URL`` (GitHub Enterprise Copilot deployments).
+    """
+    try:
+        from hermes_cli.copilot_auth import is_copilot_url
+        return is_copilot_url(url)
+    except Exception:
+        return "api.githubcopilot.com" in (url or "").lower()
+
+
 # Agent internals extracted to agent/ package for modularity
 from agent.memory_manager import StreamingContextScrubber, build_memory_context_block, sanitize_context
 from agent.retry_utils import jittered_backoff
@@ -1358,7 +1371,7 @@ class AIAgent:
                     }
                 elif base_url_host_matches(effective_base, "api.routermint.com"):
                     client_kwargs["default_headers"] = _routermint_headers()
-                elif base_url_host_matches(effective_base, "api.githubcopilot.com"):
+                elif _is_copilot_base(effective_base):
                     from hermes_cli.models import copilot_default_headers
 
                     client_kwargs["default_headers"] = copilot_default_headers()
@@ -5480,7 +5493,7 @@ class AIAgent:
         with self._openai_client_lock():
             request_kwargs = dict(self._client_kwargs)
         if (
-            base_url_host_matches(str(request_kwargs.get("base_url", "")), "api.githubcopilot.com")
+            _is_copilot_base(str(request_kwargs.get("base_url", "")))
             and self._api_kwargs_have_image_parts(api_kwargs or {})
         ):
             request_kwargs["default_headers"] = self._copilot_headers_for_request(is_vision=True)
@@ -5851,7 +5864,7 @@ class AIAgent:
             self._client_kwargs["default_headers"] = dict(_AI_GATEWAY_HEADERS)
         elif base_url_host_matches(base_url, "api.routermint.com"):
             self._client_kwargs["default_headers"] = _routermint_headers()
-        elif base_url_host_matches(base_url, "api.githubcopilot.com"):
+        elif _is_copilot_base(base_url):
             from hermes_cli.models import copilot_default_headers
 
             self._client_kwargs["default_headers"] = copilot_default_headers()
@@ -7968,7 +7981,7 @@ class AIAgent:
             _ct = self._get_transport()
             is_github_responses = (
                 base_url_host_matches(self.base_url, "models.github.ai")
-                or base_url_host_matches(self.base_url, "api.githubcopilot.com")
+                or _is_copilot_base(self.base_url)
             )
             is_codex_backend = (
                 self.provider == "openai-codex"
@@ -8001,7 +8014,7 @@ class AIAgent:
         _is_or = self._is_openrouter_url()
         _is_gh = (
             base_url_host_matches(self._base_url_lower, "models.github.ai")
-            or base_url_host_matches(self._base_url_lower, "api.githubcopilot.com")
+            or _is_copilot_base(self._base_url_lower)
         )
         _is_nous = "nousresearch" in self._base_url_lower
         _is_nvidia = "integrate.api.nvidia.com" in self._base_url_lower
@@ -8109,7 +8122,7 @@ class AIAgent:
             return True
         if (
             base_url_host_matches(self._base_url_lower, "models.github.ai")
-            or base_url_host_matches(self._base_url_lower, "api.githubcopilot.com")
+            or _is_copilot_base(self._base_url_lower)
         ):
             try:
                 from hermes_cli.models import github_model_reasoning_efforts
